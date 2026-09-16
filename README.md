@@ -6,7 +6,6 @@ the moment a PlayStation 5 appears in stock.
 ## One-time setup on your phone
 
 1. Install the **ntfy** app — [iOS](https://apps.apple.com/us/app/ntfy/id1625396347) / [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy).
-2. Tap **+** → subscribe to topic: `swipe-ps5-4aaf5f0e5e`
 3. Verify it works:
 
    ```sh

@@ -1,0 +1,8 @@
+# Your ntfy topic is a secret. In GitHub Actions it comes from the NTFY_TOPIC
+# repository secret instead, so this file must never be committed to a public repo.
+config.json
+
+watch.log
+launchd.out.log
+launchd.err.log
+__pycache__/

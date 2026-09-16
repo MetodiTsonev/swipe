@@ -1,0 +1,40 @@
+name: PS5 watch
+
+on:
+  schedule:
+    # Every 15 minutes. GitHub treats this as best-effort: runs can be delayed
+    # under load (especially on the hour) and occasionally dropped entirely.
+    - cron: '*/15 * * * *'
+  workflow_dispatch:   # lets you trigger a check by hand from the Actions tab
+
+permissions:
+  contents: write      # needed to commit state.json back to the repo
+
+concurrency:
+  group: ps5-watch     # never let two checks race on the state commit
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check swipe.bg for a PS5
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python3 ps5_watch.py
+
+      - name: Remember what we already alerted on
+        run: |
+          if [ -n "$(git status --porcelain state.json)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state.json
+            git commit -m "PS5 listings changed"
+            git pull --rebase --autostash
+            git push
+          else
+            echo "No change in PS5 listings; nothing to commit."
+          fi

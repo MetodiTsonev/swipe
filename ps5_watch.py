@@ -90,6 +90,23 @@ def fetch(url):
         return resp.read().decode("utf-8", "replace")
 
 
+def why(exc):
+    """A one-line reason for a failed fetch, with the HTTP status when there is one.
+
+    swipe.bg is behind Cloudflare, which blocks datacenter IPs far more readily
+    than home ones - so a run that works on a laptop and fails in CI usually says
+    403 here. Without the status the two look identical in the log.
+    """
+    if isinstance(exc, urllib.error.HTTPError):
+        try:
+            body = exc.read().decode("utf-8", "replace")
+        except Exception:
+            body = ""
+        snippet = " ".join(re.sub(r"<[^>]+>", " ", body).split())[:200]
+        return "HTTP %s %s%s" % (exc.code, exc.reason, (" | " + snippet) if snippet else "")
+    return str(exc)
+
+
 def text(pattern, blob):
     m = re.search(pattern, blob, re.S)
     return unescape(re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else ""
@@ -152,12 +169,16 @@ def main():
     try:
         html = fetch(URL)
     except (urllib.error.URLError, OSError) as exc:
-        log("FETCH FAILED: %s" % exc)
+        log("FETCH FAILED: %s" % why(exc))
         return 1
 
     items = parse(html)
     if not items:
-        log("WARNING: parsed 0 listings - the page layout may have changed")
+        # Distinguish "layout changed" from "we were served a block/challenge page",
+        # which arrives as a 200 and so never reaches the FETCH FAILED branch above.
+        head = " ".join(re.sub(r"<[^>]+>", " ", html[:4000]).split())[:200]
+        log("WARNING: parsed 0 listings from %d bytes - layout change or a block page? | %s"
+            % (len(html), head))
         return 1
 
     hits = [i for i in items if MATCH.search(i["title"] + " " + i["sub"])]

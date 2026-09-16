@@ -1,11 +1,11 @@
 name: PS5 watch
 
+# No schedule here on purpose. swipe.bg sits behind Cloudflare, which serves
+# GitHub's runner IPs a 403 "Just a moment..." challenge, so a run from Actions
+# can only ever fail. The real 15-minute schedule is launchd on the Mac - see
+# "Managing the schedule" in the README.
 on:
-  schedule:
-    # Every 15 minutes. GitHub treats this as best-effort: runs can be delayed
-    # under load (especially on the hour) and occasionally dropped entirely.
-    - cron: '*/15 * * * *'
-  workflow_dispatch:   # lets you trigger a check by hand from the Actions tab
+  workflow_dispatch:   # manual trigger; still hits the Cloudflare block above
 
 permissions:
   contents: write      # needed to commit state.json back to the repo

@@ -25,7 +25,7 @@ alerts, so don't share it. Change it any time in `config.json` and re-subscribe.
 | `config.json` | Your ntfy topic. |
 | `state.json` | Which PS5 listings you've already been told about. |
 | `watch.log` | One line per check. |
-| `~/Library/LaunchAgents/bg.swipe.ps5watch.plist` | The 15-minute schedule. |
+| `~/Library/LaunchAgents/bg.swipe.ps5watch.plist` | The 15-minute schedule. Pinned to `/usr/bin/python3` — the python.org builds on `PATH` ship no CA bundle and fail TLS. |
 
 ## Commands
 
@@ -36,6 +36,17 @@ python3 ps5_watch.py --test    # send a test push
 python3 ps5_watch.py --reset   # forget seen listings; next match alerts again
 tail -f watch.log              # watch it work
 ```
+
+## Where this lives
+
+The repo must sit at `~/ps5-watch` (or anywhere else outside `~/Downloads`,
+`~/Desktop` and `~/Documents`). Those three folders are TCC-protected, and a
+launchd agent does not inherit the access your terminal has — from there launchd
+cannot even read `ps5_watch.py` (`[Errno 1] Operation not permitted`) and the job
+dies with `EX_CONFIG` before writing a single log line.
+
+If you move the repo, update the two paths in
+`~/Library/LaunchAgents/bg.swipe.ps5watch.plist` and reload it.
 
 ## Managing the schedule
 
